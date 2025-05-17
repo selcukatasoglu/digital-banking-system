@@ -210,7 +210,7 @@ Bu proje açık kaynaklıdır ve eğitim amaçlı kullanılabilir.
 
 Proje Sahibi - (https://github.com/selcukatasoglu)
 
-Proje Linki: [https://github.com/github_username/online-banking](https://github.com/selcukatasoglu/digital-banking-system)
+Proje Linki: (https://github.com/selcukatasoglu/digital-banking-system)
 
 Linkedln : https://www.linkedin.com/in/selcukatasoglu/
 
