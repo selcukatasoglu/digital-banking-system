@@ -1,0 +1,546 @@
+<!--
+  Para Transferi Sayfası
+  Kullanıcıların başka hesaplara para transferi yapabilecekleri sayfa
+  Alıcı hesap numarası ve transfer tutarı girişi için form
+  İşlem özeti ve hesap bilgileri kartları içerir
+-->
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Para Transferi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#000000",
+              secondary: "#4B5563",
+            },
+            borderRadius: {
+              button: "8px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      :root {
+        --background-color: #ffffff;
+        --text-color: #000000;
+        --border-color: #000000;
+        --card-bg: #ffffff;
+        --input-bg: #ffffff;
+      }
+      [data-theme="dark"] {
+        --background-color: #1a1a1a;
+        --text-color: #ffffff;
+        --border-color: #ffffff;
+        --card-bg: #2d2d2d;
+        --input-bg: #1a1a1a;
+      }
+      body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        transition: background-color 0.5s ease, color 0.5s ease;
+      }
+      .dashboard-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      [data-theme="dark"] .dashboard-card {
+        box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.1);
+      }
+      .custom-input {
+        background-color: var(--input-bg) !important;
+        appearance: textfield;
+        -moz-appearance: textfield;
+      }
+      .custom-input::-webkit-outer-spin-button,
+      .custom-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 50;
+        animation: slideIn 0.5s ease-out;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+      .slide-out {
+        animation: slideOut 0.5s ease-in forwards;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <!-- Başarı Bildirimi -->
+    <div
+      th:if="${success}"
+      id="successNotification"
+      class="notification bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-200 px-6 py-4 rounded-lg shadow-lg flex items-center"
+    >
+      <i class="ri-checkbox-circle-line text-2xl mr-3"></i>
+      <span th:text="${success}"></span>
+    </div>
+
+    <nav class="border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+          <div class="flex items-center space-x-4">
+            <a
+              href="/dashboard"
+              class="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+            >
+              <i class="ri-arrow-left-line text-xl mr-1"></i>
+              <span>Geri Dön</span>
+            </a>
+            <span class="text-2xl font-bold">Parion</span>
+          </div>
+          <div class="flex items-center space-x-4">
+            <button
+              id="themeToggle"
+              class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              <i class="ri-sun-line text-xl" id="themeIcon"></i>
+            </button>
+            <a
+              href="/logout"
+              class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+            >
+              <i class="ri-logout-box-r-line text-xl"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Ana İçerik -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Sol Taraf - Hesap Bilgileri -->
+        <div>
+          <!-- Hesap Bilgileri Kartı -->
+          <div class="dashboard-card rounded-button p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold">Hesap Bilgileri</h2>
+              <i
+                class="ri-bank-card-line text-2xl text-gray-600 dark:text-gray-400"
+              ></i>
+            </div>
+            <div class="space-y-3">
+              <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  Hesap Numarası
+                </p>
+                <p class="font-medium" th:text="${account.accountNumber}"></p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  Mevcut Bakiye
+                </p>
+                <p class="text-2xl font-bold">
+                  <span th:if="${account.balance == 0}">0,00 ₺</span>
+                  <span
+                    th:unless="${account.balance == 0}"
+                    th:text="${#numbers.formatDecimal(account.balance, 1, 'POINT', 2, 'COMMA') + ' ₺'}"
+                  ></span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <!-- Son 3 İşlem Kartı -->
+          <div class="dashboard-card rounded-button p-4 mt-4">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-lg font-semibold">Son 3 İşlem</h3>
+              <i
+                class="ri-history-line text-xl text-gray-600 dark:text-gray-400"
+              ></i>
+            </div>
+            <div>
+              <div
+                th:if="${#lists.isEmpty(lastTransactions)}"
+                class="text-gray-500 dark:text-gray-400 text-sm py-2"
+              >
+                Son işlem bulunamadı.
+              </div>
+              <ul
+                th:if="${!#lists.isEmpty(lastTransactions)}"
+                class="divide-y divide-gray-200 dark:divide-gray-700"
+              >
+                <li
+                  th:each="transaction : ${lastTransactions}"
+                  class="py-2 flex items-center justify-between"
+                >
+                  <div>
+                    <span
+                      class="text-xs text-gray-500 dark:text-gray-400"
+                      th:text="${#temporals.format(transaction.transactionDate, 'dd/MM/yyyy HH:mm')}"
+                    ></span>
+                    <span
+                      th:if="${transaction.transactionType.name() == 'TRANSFER'}"
+                    >
+                      <span
+                        th:if="${transaction.fromAccount.accountNumber == account.accountNumber}"
+                      >
+                        <span class="ml-2 text-red-500">→</span>
+                        <a
+                          th:href="@{'/transfer?accountNumber=' + ${transaction.toAccount.accountNumber}}"
+                          class="underline hover:text-gray-900 dark:hover:text-gray-100 transition-colors font-medium"
+                          th:text="${transaction.toAccount.user.firstName + ' ' + transaction.toAccount.user.lastName}"
+                        ></a>
+                      </span>
+                      <span
+                        th:if="${transaction.toAccount.accountNumber == account.accountNumber}"
+                      >
+                        <span class="ml-2 text-green-500">←</span>
+                        <a
+                          th:href="@{'/transfer?accountNumber=' + ${transaction.fromAccount.accountNumber}}"
+                          class="underline hover:text-gray-900 dark:hover:text-gray-100 transition-colors font-medium"
+                          th:text="${transaction.fromAccount.user.firstName + ' ' + transaction.fromAccount.user.lastName}"
+                        ></a>
+                      </span>
+                    </span>
+                    <span
+                      th:if="${transaction.transactionType.name() == 'DEPOSIT'}"
+                      class="ml-2 text-green-600 dark:text-green-400"
+                      >Para Yatırma</span
+                    >
+                    <span
+                      th:if="${transaction.transactionType.name() == 'WITHDRAWAL'}"
+                      class="ml-2 text-red-600 dark:text-red-400"
+                      >Para Çekme</span
+                    >
+                  </div>
+                  <div
+                    class="text-sm font-semibold"
+                    th:classappend="${transaction.transactionType.name() == 'WITHDRAWAL' or (transaction.transactionType.name() == 'TRANSFER' and transaction.fromAccount.accountNumber == account.accountNumber)} ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'"
+                    th:text="|${transaction.transactionType.name() == 'WITHDRAWAL' or (transaction.transactionType.name() == 'TRANSFER' and transaction.fromAccount.accountNumber == account.accountNumber) ? '-' : '+'}${#numbers.formatDecimal(transaction.amount, 1, 'POINT', 2, 'COMMA')} ₺|"
+                  ></div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sağ Taraf - Transfer Formu -->
+        <div class="md:col-span-2">
+          <div class="dashboard-card rounded-button p-6 space-y-6">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold">Havale Yap</h2>
+              <i
+                class="ri-exchange-funds-line text-2xl text-gray-600 dark:text-gray-400"
+              ></i>
+            </div>
+
+            <!-- Hata Mesajı -->
+            <div
+              th:if="${error}"
+              class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative dark:bg-red-900/50 dark:text-red-200"
+            >
+              <span th:text="${error}"></span>
+            </div>
+
+            <form method="post" th:action="@{/transfer}" class="space-y-6">
+              <!-- Alıcı Bilgileri Kartı -->
+              <div
+                class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4"
+              >
+                <div class="flex items-center justify-between">
+                  <h3 class="font-medium">Alıcı Bilgileri</h3>
+                  <i
+                    class="ri-user-3-line text-gray-600 dark:text-gray-400"
+                  ></i>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="relative">
+                    <label
+                      for="toAccount"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      Alıcı Hesap Numarası
+                    </label>
+                    <input
+                      type="text"
+                      id="toAccount"
+                      name="toAccount"
+                      placeholder="Alıcı Hesap Numarası"
+                      class="w-full px-4 py-2 bg-transparent border border-gray-300 dark:border-gray-700 rounded-button focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-gray-100"
+                      th:value="${param.accountNumber}"
+                      required
+                    />
+                  </div>
+
+                  <div id="recipientInfo" class="hidden">
+                    <div
+                      class="flex items-center space-x-2 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm"
+                    >
+                      <i class="ri-user-smile-line text-green-500"></i>
+                      <div>
+                        <div
+                          class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                          id="recipientName"
+                        ></div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">
+                          Alıcı
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transfer Tutarı -->
+              <div class="space-y-4">
+                <div class="relative">
+                  <label
+                    for="amount"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Transfer Tutarı
+                  </label>
+                  <div class="relative">
+                    <input
+                      type="number"
+                      id="amount"
+                      name="amount"
+                      step="0.01"
+                      min="0"
+                      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-button focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500 custom-input"
+                      required
+                    />
+                    <span
+                      class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                      >₺</span
+                    >
+                  </div>
+                </div>
+
+                <!-- Transfer Özeti -->
+                <div
+                  class="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+                >
+                  <h3 class="font-medium mb-3">İşlem Özeti</h3>
+                  <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                      <span class="text-gray-600 dark:text-gray-400"
+                        >Transfer Tutarı:</span
+                      >
+                      <span id="summaryAmount">0,00 ₺</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600 dark:text-gray-400"
+                        >İşlem Ücreti:</span
+                      >
+                      <span>5,00 ₺</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600 dark:text-gray-400"
+                        >İşlem Sonrası Bakiye:</span
+                      >
+                      <span
+                        id="remainingBalance"
+                        th:text="${#numbers.formatDecimal(account.balance, 1, 'POINT', 2, 'COMMA')} + ' ₺'"
+                      ></span>
+                    </div>
+                    <hr class="border-gray-200 dark:border-gray-700" />
+                    <div class="flex justify-between font-medium">
+                      <span>Toplam:</span>
+                      <span id="summaryTotal">5,00 ₺</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                class="w-full py-3 px-4 bg-gray-900 dark:bg-gray-800 text-white rounded-button hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer flex items-center justify-center space-x-2 border border-gray-900 dark:border-gray-700"
+              >
+                <i class="ri-send-plane-line"></i>
+                <span>Transferi Gerçekleştir</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Tema değiştirme fonksiyonu
+      function setTheme(isDark) {
+        document.documentElement.setAttribute(
+          "data-theme",
+          isDark ? "dark" : "light"
+        );
+        const themeIcon = document.getElementById("themeIcon");
+        themeIcon.className = isDark
+          ? "ri-moon-line text-xl"
+          : "ri-sun-line text-xl";
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      }
+
+      // Tema değiştirme butonu
+      document.getElementById("themeToggle").addEventListener("click", () => {
+        const isDark =
+          document.documentElement.getAttribute("data-theme") === "dark";
+        setTheme(!isDark);
+      });
+
+      // Başlangıç tema ayarı
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+        setTheme(savedTheme === "dark");
+      } else {
+        setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches);
+      }
+
+      // Başarı bildirimi otomatik kapanma
+      const successNotification = document.getElementById(
+        "successNotification"
+      );
+      if (successNotification) {
+        setTimeout(() => {
+          successNotification.classList.add("slide-out");
+          setTimeout(() => {
+            successNotification.remove();
+          }, 500);
+        }, 3000);
+      }
+
+      // Alıcı hesap numarası kontrolü ve isim gösterme
+      let typingTimer;
+      const doneTypingInterval = 500;
+      const toAccountInput = document.getElementById("toAccount");
+      const recipientInfo = document.getElementById("recipientInfo");
+      const recipientNameDiv = document.getElementById("recipientName");
+
+      toAccountInput.addEventListener("input", function () {
+        clearTimeout(typingTimer);
+        if (this.value.length === 9) {
+          typingTimer = setTimeout(() => {
+            fetch(`/api/account/${this.value}/user`)
+              .then((response) => response.text())
+              .then((data) => {
+                if (data === "Hesap bulunamadı") {
+                  recipientInfo.classList.add("hidden");
+                } else {
+                  recipientNameDiv.textContent = data;
+                  recipientInfo.classList.remove("hidden");
+                }
+              });
+          }, doneTypingInterval);
+        } else {
+          recipientInfo.classList.add("hidden");
+        }
+      });
+
+      // Sadece sayı girişine izin ver
+      toAccountInput.addEventListener("input", function (e) {
+        this.value = this.value.replace(/[^0-9]/g, "");
+        if (this.value.length > 9) {
+          this.value = this.value.slice(0, 9);
+        }
+      });
+
+      // Transfer tutarı güncelleme
+      const amountInput = document.getElementById("amount");
+      const summaryAmount = document.getElementById("summaryAmount");
+      const summaryTotal = document.getElementById("summaryTotal");
+      const remainingBalance = document.getElementById("remainingBalance");
+      const FEE = 5.0; // Sabit işlem ücreti
+      const currentBalance = parseFloat(
+        remainingBalance.textContent.replace("₺", "").replace(",", ".").trim()
+      );
+
+      amountInput.addEventListener("input", function () {
+        const amount = parseFloat(this.value) || 0;
+        const total = amount + FEE;
+        const newBalance = currentBalance - total;
+
+        summaryAmount.textContent =
+          amount.toLocaleString("tr-TR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }) + " ₺";
+
+        summaryTotal.textContent =
+          total.toLocaleString("tr-TR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }) + " ₺";
+
+        remainingBalance.textContent =
+          newBalance.toLocaleString("tr-TR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }) + " ₺";
+
+        // Bakiye yetersizse uyarı rengini kırmızı yap
+        if (newBalance < 0) {
+          remainingBalance.classList.add("text-red-500", "dark:text-red-400");
+        } else {
+          remainingBalance.classList.remove(
+            "text-red-500",
+            "dark:text-red-400"
+          );
+        }
+      });
+
+      // Sayfa yüklendiğinde parametreyi inputa yaz
+      document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const accountNumber = urlParams.get("accountNumber");
+        if (accountNumber) {
+          const input = document.getElementById("toAccount");
+          if (input) {
+            input.value = accountNumber;
+            // Alıcı adı otomatik gelsin
+            fetch(`/api/account/${accountNumber}/user`)
+              .then((response) => response.text())
+              .then((data) => {
+                if (data === "Hesap bulunamadı") {
+                  recipientInfo.classList.add("hidden");
+                } else {
+                  recipientNameDiv.textContent = data;
+                  recipientInfo.classList.remove("hidden");
+                }
+              });
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

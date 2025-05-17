@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hesap Hareketleri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#000000",
+              secondary: "#4B5563",
+            },
+            borderRadius: {
+              button: "8px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      :root {
+        --background-color: #ffffff;
+        --text-color: #000000;
+        --border-color: #000000;
+        --card-bg: #ffffff;
+      }
+      [data-theme="dark"] {
+        --background-color: #1a1a1a;
+        --text-color: #ffffff;
+        --border-color: #ffffff;
+        --card-bg: #2d2d2d;
+      }
+      body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        transition: background-color 0.5s ease, color 0.5s ease;
+      }
+      .dashboard-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      [data-theme="dark"] .dashboard-card {
+        box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.1);
+      }
+      .transaction-row {
+        transition: background-color 0.3s ease;
+      }
+      .transaction-row:hover {
+        background-color: rgba(107, 114, 128, 0.1);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <!-- Navbar -->
+    <nav class="border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+          <div class="flex items-center space-x-4">
+            <a
+              href="/dashboard"
+              class="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            >
+              <i class="ri-arrow-left-line text-xl mr-1"></i>
+              <span>Geri Dön</span>
+            </a>
+            <span class="text-2xl font-bold">Hesap Hareketleri</span>
+          </div>
+          <div class="flex items-center space-x-4">
+            <button
+              id="themeToggle"
+              class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              <i class="ri-sun-line text-xl" id="themeIcon"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Ana İçerik -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Başarılı Mesaj -->
+      <div
+        th:if="${successMessage}"
+        class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-button"
+      >
+        <div class="flex items-center">
+          <i class="ri-checkbox-circle-line mr-2"></i>
+          <span th:text="${successMessage}"></span>
+        </div>
+      </div>
+
+      <!-- Hata Mesajı -->
+      <div
+        th:if="${errorMessage}"
+        class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-button"
+      >
+        <div class="flex items-center">
+          <i class="ri-error-warning-line mr-2"></i>
+          <span th:text="${errorMessage}"></span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Hesap Bilgileri Kartı -->
+        <div class="dashboard-card rounded-button p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-4">
+              <h2 class="text-xl font-semibold">Hesap Bilgileri</h2>
+              <p
+                class="text-sm text-gray-600 dark:text-gray-400 mt-1"
+                th:text="${account.accountNumber}"
+              ></p>
+              <form th:action="@{/transactions/send-pdf}" method="post">
+                <button
+                  type="submit"
+                  class="flex items-center px-4 py-2 bg-gray-900 dark:bg-gray-800 text-white rounded-button hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors duration-200"
+                >
+                  <i class="ri-file-pdf-line mr-2"></i>
+                  <span>PDF Olarak Al</span>
+                </button>
+              </form>
+            </div>
+            <div class="text-right">
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Mevcut Bakiye
+              </p>
+              <p
+                class="text-2xl font-bold"
+                th:text="${#numbers.formatDecimal(account.balance, 1, 'POINT', 2, 'COMMA') + ' ₺'}"
+              ></p>
+            </div>
+          </div>
+
+          <!-- İşlem Geçmişi -->
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-gray-200 dark:border-gray-700">
+                  <th
+                    class="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400"
+                  >
+                    Tarih
+                  </th>
+                  <th
+                    class="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400"
+                  >
+                    İşlem Türü
+                  </th>
+                  <th
+                    class="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400"
+                  >
+                    Karşı Hesap
+                  </th>
+                  <th
+                    class="text-right py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400"
+                  >
+                    Tutar
+                  </th>
+                  <th
+                    class="text-right py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400"
+                  >
+                    İşlem Ücreti
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  th:each="transaction : ${transactions}"
+                  class="transaction-row border-b border-gray-100 dark:border-gray-800"
+                >
+                  <td
+                    class="py-3 px-4 text-sm"
+                    th:text="${#temporals.format(transaction.transactionDate, 'dd/MM/yyyy HH:mm')}"
+                  ></td>
+                  <td class="py-3 px-4">
+                    <!-- Transfer -->
+                    <div
+                      th:if="${transaction.transactionType.name() == 'TRANSFER'}"
+                      class="flex items-center"
+                    >
+                      <i
+                        th:if="${transaction.fromAccount.accountNumber == account.accountNumber}"
+                        class="ri-arrow-right-circle-line text-red-500 mr-2"
+                      ></i>
+                      <i
+                        th:if="${transaction.toAccount.accountNumber == account.accountNumber}"
+                        class="ri-arrow-left-circle-line text-green-500 mr-2"
+                      ></i>
+                      <span
+                        th:if="${transaction.fromAccount.accountNumber == account.accountNumber}"
+                        class="text-sm text-red-600 dark:text-red-400"
+                        >Gönderilen</span
+                      >
+                      <span
+                        th:if="${transaction.toAccount.accountNumber == account.accountNumber}"
+                        class="text-sm text-green-600 dark:text-green-400"
+                        >Alınan</span
+                      >
+                    </div>
+                    <!-- Para Yatırma -->
+                    <div
+                      th:if="${transaction.transactionType.name() == 'DEPOSIT'}"
+                      class="flex items-center"
+                    >
+                      <i class="ri-add-circle-line text-green-500 mr-2"></i>
+                      <span class="text-sm text-green-600 dark:text-green-400"
+                        >Para Yatırma</span
+                      >
+                    </div>
+                    <!-- Para Çekme -->
+                    <div
+                      th:if="${transaction.transactionType.name() == 'WITHDRAWAL'}"
+                      class="flex items-center"
+                    >
+                      <i class="ri-subtract-line text-red-500 mr-2"></i>
+                      <span class="text-sm text-red-600 dark:text-red-400"
+                        >Para Çekme</span
+                      >
+                    </div>
+                  </td>
+                  <td class="py-3 px-4 text-sm">
+                    <!-- Transfer için karşı hesap -->
+                    <span
+                      th:if="${transaction.transactionType.name() == 'TRANSFER'}"
+                    >
+                      <span
+                        th:if="${transaction.fromAccount.accountNumber == account.accountNumber}"
+                      >
+                        <a
+                          th:href="@{'/transfer?accountNumber=' + ${transaction.toAccount.accountNumber}}"
+                          class="underline hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                          th:text="${transaction.toAccount.user.firstName + ' ' + transaction.toAccount.user.lastName}"
+                        >
+                        </a>
+                      </span>
+                      <span
+                        th:if="${transaction.toAccount.accountNumber == account.accountNumber}"
+                      >
+                        <a
+                          th:href="@{'/transfer?accountNumber=' + ${transaction.fromAccount.accountNumber}}"
+                          class="underline hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                          th:text="${transaction.fromAccount.user.firstName + ' ' + transaction.fromAccount.user.lastName}"
+                        >
+                        </a>
+                      </span>
+                    </span>
+                    <!-- Para yatırma/çekme için - -->
+                    <span
+                      th:if="${transaction.transactionType.name() != 'TRANSFER'}"
+                      >-</span
+                    >
+                  </td>
+                  <td class="py-3 px-4 text-right">
+                    <span
+                      th:if="${transaction.transactionType.name() == 'TRANSFER' && transaction.fromAccount.accountNumber == account.accountNumber}"
+                      class="text-red-600 dark:text-red-400"
+                      th:text="'-' + ${#numbers.formatDecimal(transaction.amount, 1, 'POINT', 2, 'COMMA') + ' ₺'}"
+                    ></span>
+                    <span
+                      th:if="${transaction.transactionType.name() == 'TRANSFER' && transaction.toAccount.accountNumber == account.accountNumber}"
+                      class="text-green-600 dark:text-green-400"
+                      th:text="'+' + ${#numbers.formatDecimal(transaction.amount, 1, 'POINT', 2, 'COMMA') + ' ₺'}"
+                    ></span>
+                    <span
+                      th:if="${transaction.transactionType.name() == 'DEPOSIT'}"
+                      class="text-green-600 dark:text-green-400"
+                      th:text="'+' + ${#numbers.formatDecimal(transaction.amount, 1, 'POINT', 2, 'COMMA') + ' ₺'}"
+                    ></span>
+                    <span
+                      th:if="${transaction.transactionType.name() == 'WITHDRAWAL'}"
+                      class="text-red-600 dark:text-red-400"
+                      th:text="'-' + ${#numbers.formatDecimal(transaction.amount, 1, 'POINT', 2, 'COMMA') + ' ₺'}"
+                    ></span>
+                  </td>
+                  <td class="py-3 px-4 text-right">
+                    <span
+                      th:if="${transaction.transactionFee != null && transaction.transactionFee > 0}"
+                      class="text-gray-600 dark:text-gray-400"
+                      th:text="${#numbers.formatDecimal(transaction.transactionFee, 1, 'POINT', 2, 'COMMA') + ' ₺'}"
+                    >
+                    </span>
+                    <span
+                      th:if="${transaction.transactionFee == null || transaction.transactionFee == 0}"
+                      class="text-gray-600 dark:text-gray-400"
+                      >-</span
+                    >
+                  </td>
+                </tr>
+                <!-- İşlem yoksa -->
+                <tr th:if="${transactions.empty}">
+                  <td
+                    colspan="5"
+                    class="py-8 text-center text-gray-500 dark:text-gray-400"
+                  >
+                    <i class="ri-inbox-line text-4xl mb-2"></i>
+                    <p>Henüz hiç işlem yapılmamış.</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Tema değiştirme fonksiyonu
+      function setTheme(isDark) {
+        document.documentElement.setAttribute(
+          "data-theme",
+          isDark ? "dark" : "light"
+        );
+        const themeIcon = document.getElementById("themeIcon");
+        themeIcon.className = isDark
+          ? "ri-moon-line text-xl"
+          : "ri-sun-line text-xl";
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      }
+
+      // Tema değiştirme butonu
+      document.getElementById("themeToggle").addEventListener("click", () => {
+        const isDark =
+          document.documentElement.getAttribute("data-theme") === "dark";
+        setTheme(!isDark);
+      });
+
+      // Başlangıç tema ayarı
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+        setTheme(savedTheme === "dark");
+      } else {
+        setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches);
+      }
+    </script>
+  </body>
+</html>

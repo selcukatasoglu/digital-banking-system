@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detaylı Döviz Bilgileri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#000000",
+              secondary: "#4B5563",
+            },
+            borderRadius: {
+              button: "8px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      :root {
+        --background-color: #ffffff;
+        --text-color: #000000;
+        --border-color: #000000;
+        --card-bg: #ffffff;
+      }
+      [data-theme="dark"] {
+        --background-color: #1a1a1a;
+        --text-color: #ffffff;
+        --border-color: #ffffff;
+        --card-bg: #2d2d2d;
+      }
+      body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        transition: background-color 0.5s ease, color 0.5s ease;
+      }
+      .dashboard-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      @keyframes scroll {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+      .animate-scroll {
+        animation: scroll 30s linear infinite;
+      }
+      .animate-scroll:hover {
+        animation-play-state: paused;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <!-- Navbar -->
+    <nav class="border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex">
+            <div class="flex items-center">
+              <a
+                href="/dashboard"
+                class="flex items-center hover:text-gray-900 dark:hover:text-white mr-6"
+              >
+                <i class="ri-arrow-left-line mr-2"></i>
+                Geri Dön
+              </a>
+              <span class="text-2xl font-bold"> Parion </span>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <button
+              id="themeToggle"
+              class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              <i class="ri-sun-line text-xl" id="themeIcon"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div class="px-4 py-6 sm:px-0">
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold">Detaylı Döviz Bilgileri</h1>
+          <p class="text-sm mt-2">
+            Son güncelleme: <span th:text="${exchangeRates.updateDate}"></span>
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- USD Kartı -->
+          <div class="dashboard-card rounded-button p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i
+                  class="ri-money-dollar-circle-line text-2xl text-green-500 mr-2"
+                ></i>
+                <div>
+                  <h2 class="text-xl font-semibold">USD/TRY</h2>
+                  <p class="text-sm">Amerikan Doları</p>
+                </div>
+              </div>
+              <span
+                class="text-sm"
+                th:classappend="${#strings.contains(exchangeRates.usdChange, '-')} ? 'text-red-500' : (${#strings.contains(exchangeRates.usdChange, '0,00')} ? 'text-gray-500' : 'text-green-500')"
+                th:text="${exchangeRates.usdChange}"
+                >%0,07</span
+              >
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class=" ">Alış</span>
+                <span class="font-medium" th:text="${exchangeRates.usdBuy}"
+                  >38,8006</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class=" ">Satış</span>
+                <span class="font-medium" th:text="${exchangeRates.usdSell}"
+                  >38,8041</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- EUR Kartı -->
+          <div class="dashboard-card rounded-button p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i
+                  class="ri-money-euro-circle-line text-2xl text-blue-500 mr-2"
+                ></i>
+                <div>
+                  <h2 class="text-xl font-semibold">EUR/TRY</h2>
+                  <p class="text-sm">Euro</p>
+                </div>
+              </div>
+              <span
+                class="text-sm"
+                th:classappend="${#strings.contains(exchangeRates.eurChange, '-')} ? 'text-red-500' : (${#strings.contains(exchangeRates.eurChange, '0,00')} ? 'text-gray-500' : 'text-green-500')"
+                th:text="${exchangeRates.eurChange}"
+                >%0,24</span
+              >
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class=" ">Alış</span>
+                <span class="font-medium" th:text="${exchangeRates.eurBuy}"
+                  >43,1315</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class=" ">Satış</span>
+                <span class="font-medium" th:text="${exchangeRates.eurSell}"
+                  >43,1387</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- GBP Kartı -->
+          <div class="dashboard-card rounded-button p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i class="ri-coins-line text-2xl text-yellow-500 mr-2"></i>
+                <div>
+                  <h2 class="text-xl font-semibold">GBP/TRY</h2>
+                  <p class="text-sm">İngiliz Sterlini</p>
+                </div>
+              </div>
+              <span
+                class="text-sm"
+                th:classappend="${#strings.contains(exchangeRates.gbpChange, '-')} ? 'text-red-500' : (${#strings.contains(exchangeRates.gbpChange, '0,00')} ? 'text-gray-500' : 'text-green-500')"
+                th:text="${exchangeRates.gbpChange}"
+                >%0,32</span
+              >
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class=" ">Alış</span>
+                <span class="font-medium" th:text="${exchangeRates.gbpBuy}"
+                  >51,3082</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class=" ">Satış</span>
+                <span class="font-medium" th:text="${exchangeRates.gbpSell}"
+                  >51,3238</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- CHF Kartı -->
+          <div class="dashboard-card rounded-button p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i
+                  class="ri-money-franc-circle-line text-2xl text-red-500 mr-2"
+                ></i>
+                <div>
+                  <h2 class="text-xl font-semibold">CHF/TRY</h2>
+                  <p class="text-sm">İsviçre Frangı</p>
+                </div>
+              </div>
+              <span
+                class="text-sm"
+                th:classappend="${#strings.contains(exchangeRates.chfChange, '-')} ? 'text-red-500' : (${#strings.contains(exchangeRates.chfChange, '0,00')} ? 'text-gray-500' : 'text-green-500')"
+                th:text="${exchangeRates.chfChange}"
+                >%0,64</span
+              >
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class=" ">Alış</span>
+                <span class="font-medium" th:text="${exchangeRates.chfBuy}"
+                  >46,1363</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class=" ">Satış</span>
+                <span class="font-medium" th:text="${exchangeRates.chfSell}"
+                  >46,1624</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- CAD Kartı -->
+          <div class="dashboard-card rounded-button p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i
+                  class="ri-money-dollar-circle-line text-2xl text-green-500 mr-2"
+                ></i>
+                <div>
+                  <h2 class="text-xl font-semibold">CAD/TRY</h2>
+                  <p class="text-sm">Kanada Doları</p>
+                </div>
+              </div>
+              <span
+                class="text-sm"
+                th:classappend="${#strings.contains(exchangeRates.cadChange, '-')} ? 'text-red-500' : (${#strings.contains(exchangeRates.cadChange, '0,00')} ? 'text-gray-500' : 'text-green-500')"
+                th:text="${exchangeRates.cadChange}"
+                >%-0,04</span
+              >
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="">Alış</span>
+                <span class="font-medium" th:text="${exchangeRates.cadBuy}"
+                  >27,7306</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class=" ">Satış</span>
+                <span class="font-medium" th:text="${exchangeRates.cadSell}"
+                  >27,7410</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- RUB Kartı -->
+          <div class="dashboard-card rounded-button p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i
+                  class="ri-money-ruble-circle-line text-2xl text-blue-500 mr-2"
+                ></i>
+                <div>
+                  <h2 class="text-xl font-semibold">RUB/TRY</h2>
+                  <p class="text-sm">Rus Rublesi</p>
+                </div>
+              </div>
+              <span
+                class="text-sm"
+                th:classappend="${#strings.contains(exchangeRates.rubChange, '-')} ? 'text-red-500' : (${#strings.contains(exchangeRates.rubChange, '0,00')} ? 'text-gray-500' : 'text-green-500')"
+                th:text="${exchangeRates.rubChange}"
+                >%0,67</span
+              >
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class=" ">Alış</span>
+                <span class="font-medium" th:text="${exchangeRates.rubBuy}"
+                  >0,4816</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class=" ">Satış</span>
+                <span class="font-medium" th:text="${exchangeRates.rubSell}"
+                  >0,4823</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- AED Kartı -->
+          <div class="dashboard-card rounded-button p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i
+                  class="ri-money-dollar-circle-line text-2xl text-green-500 mr-2"
+                ></i>
+                <div>
+                  <h2 class="text-xl font-semibold">AED/TRY</h2>
+                  <p class="text-sm">Birleşik Arap Emirlikleri Dirhemi</p>
+                </div>
+              </div>
+              <span
+                class="text-sm"
+                th:classappend="${#strings.contains(exchangeRates.aedChange, '-')} ? 'text-red-500' : (${#strings.contains(exchangeRates.aedChange, '0,00')} ? 'text-gray-500' : 'text-green-500')"
+                th:text="${exchangeRates.aedChange}"
+                >%0,07</span
+              >
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="">Alış</span>
+                <span class="font-medium" th:text="${exchangeRates.aedBuy}"
+                  >10,5624</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class="">Satış</span>
+                <span class="font-medium" th:text="${exchangeRates.aedSell}"
+                  >10,5663</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Gram Altın Kartı -->
+          <div class="dashboard-card rounded-button p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i class="ri-coin-line text-2xl text-yellow-500 mr-2"></i>
+                <div>
+                  <h2 class="text-xl font-semibold">Gram Altın</h2>
+                  <p class="text-sm">Gram Altın</p>
+                </div>
+              </div>
+              <span
+                class="text-sm"
+                th:classappend="${#strings.contains(exchangeRates.gramAltinChange, '-')} ? 'text-red-500' : (${#strings.contains(exchangeRates.gramAltinChange, '0,00')} ? 'text-gray-500' : 'text-green-500')"
+                th:text="${exchangeRates.gramAltinChange}"
+                >%0,62</span
+              >
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class=" ">Alış</span>
+                <span
+                  class="font-medium"
+                  th:text="${exchangeRates.gramAltinBuy}"
+                  >4.059,73</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class=" ">Satış</span>
+                <span
+                  class="font-medium"
+                  th:text="${exchangeRates.gramAltinSell}"
+                  >4.060,31</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Cumhuriyet Altını Kartı -->
+          <div class="dashboard-card rounded-button p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i class="ri-coin-line text-2xl text-yellow-500 mr-2"></i>
+                <div>
+                  <h2 class="text-xl font-semibold">Cumhuriyet Altını</h2>
+                  <p class="text-sm">Cumhuriyet Altını</p>
+                </div>
+              </div>
+              <span
+                class="text-sm"
+                th:classappend="${#strings.contains(exchangeRates.cumhuriyetAltiniChange, '-')} ? 'text-red-500' : (${#strings.contains(exchangeRates.cumhuriyetAltiniChange, '0,00')} ? 'text-gray-500' : 'text-green-500')"
+                th:text="${exchangeRates.cumhuriyetAltiniChange}"
+                >%-2,47</span
+              >
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class=" ">Alış</span>
+                <span
+                  class="font-medium"
+                  th:text="${exchangeRates.cumhuriyetAltiniBuy}"
+                  >27.158,00</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class=" ">Satış</span>
+                <span
+                  class="font-medium"
+                  th:text="${exchangeRates.cumhuriyetAltiniSell}"
+                  >27.568,00</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Gümüş Kartı -->
+          <div class="dashboard-card rounded-button p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i class="ri-coin-line text-2xl text-gray-400 mr-2"></i>
+                <div>
+                  <h2 class="text-xl font-semibold">Gümüş</h2>
+                  <p class="text-sm">Gümüş</p>
+                </div>
+              </div>
+              <span
+                class="text-sm"
+                th:classappend="${#strings.contains(exchangeRates.gumusChange, '-')} ? 'text-red-500' : (${#strings.contains(exchangeRates.gumusChange, '0,00')} ? 'text-gray-500' : 'text-green-500')"
+                th:text="${exchangeRates.gumusChange}"
+                >%1,67</span
+              >
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class=" ">Alış</span>
+                <span class="font-medium" th:text="${exchangeRates.gumusBuy}"
+                  >41,30</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class=" ">Satış</span>
+                <span class="font-medium" th:text="${exchangeRates.gumusSell}"
+                  >41,35</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Gram Platin Kartı -->
+          <div class="dashboard-card rounded-button p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i class="ri-coin-line text-2xl text-blue-400 mr-2"></i>
+                <div>
+                  <h2 class="text-xl font-semibold">Gram Platin</h2>
+                  <p class="text-sm">Gram Platin</p>
+                </div>
+              </div>
+              <span
+                class="text-sm"
+                th:classappend="${#strings.contains(exchangeRates.gramPlatinChange, '-')} ? 'text-red-500' : (${#strings.contains(exchangeRates.gramPlatinChange, '0,00')} ? 'text-gray-500' : 'text-green-500')"
+                th:text="${exchangeRates.gramPlatinChange}"
+                >%0,74</span
+              >
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class=" ">Alış</span>
+                <span
+                  class="font-medium"
+                  th:text="${exchangeRates.gramPlatinBuy}"
+                  >1.232,51</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class=" ">Satış</span>
+                <span
+                  class="font-medium"
+                  th:text="${exchangeRates.gramPlatinSell}"
+                  >1.235,78</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Gram Paladyum Kartı -->
+          <div class="dashboard-card rounded-button p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <i class="ri-coin-line text-2xl text-purple-400 mr-2"></i>
+                <div>
+                  <h2 class="text-xl font-semibold">Gram Paladyum</h2>
+                  <p class="text-sm">Gram Paladyum</p>
+                </div>
+              </div>
+              <span
+                class="text-sm"
+                th:classappend="${#strings.contains(exchangeRates.gramPaladyumChange, '-')} ? 'text-red-500' : (${#strings.contains(exchangeRates.gramPaladyumChange, '0,00')} ? 'text-gray-500' : 'text-green-500')"
+                th:text="${exchangeRates.gramPaladyumChange}"
+                >%0,14</span
+              >
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class=" ">Alış</span>
+                <span
+                  class="font-medium"
+                  th:text="${exchangeRates.gramPaladyumBuy}"
+                  >1.182,32</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span class=" ">Satış</span>
+                <span
+                  class="font-medium"
+                  th:text="${exchangeRates.gramPaladyumSell}"
+                  >1.188,47</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Tema değiştirme fonksiyonu
+      function setTheme(isDark) {
+        document.documentElement.setAttribute(
+          "data-theme",
+          isDark ? "dark" : "light"
+        );
+        const themeIcon = document.getElementById("themeIcon");
+        themeIcon.className = isDark
+          ? "ri-moon-line text-xl"
+          : "ri-sun-line text-xl";
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      }
+
+      // Tema değiştirme butonu
+      document.getElementById("themeToggle").addEventListener("click", () => {
+        const isDark =
+          document.documentElement.getAttribute("data-theme") === "dark";
+        setTheme(!isDark);
+      });
+
+      // Başlangıç tema ayarı
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+        setTheme(savedTheme === "dark");
+      } else {
+        setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches);
+      }
+    </script>
+  </body>
+</html>
